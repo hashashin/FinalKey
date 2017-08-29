@@ -26,8 +26,12 @@
 
 
 //Edit this file to select included layouts.
-#include <KeyMaps.h>
-
+//#include <KeyMaps.h>
+//Using now custom arduino keyboard library with layout generated via:
+//https://github.com/Nurrl/LocaleKeyboard.js
+//It also makes the sketch compatible with 1.8.x IDE,I just has to modify the twi buffer
+//and add the board definition
+#include <Keyboard.h>
 
 #define ledPin 10
 #define btnPin 9
@@ -218,6 +222,7 @@ void printKbLayoutList()
 #ifdef KBMAP_D
   ptxtln(KBMAP_D_NAME);
 #endif
+  ptxtln("  1. ESPC"); //placeholder to make it compatible with the currents UIs
 }
 
 void getKbLayout()
@@ -232,11 +237,11 @@ void getKbLayout()
     k = getOneChar()-'0';
       switch(k)
       {
-        #ifdef KBMAP_A
+        //#ifdef KBMAP_A
         case 1:
-          k=KBMAP_A;
+          k=1;//placeholder to make it compatible with the currents UIs
         break;
-        #endif
+        //#endif
         #ifdef KBMAP_B
         case 2:
           k=KBMAP_B;
@@ -253,14 +258,15 @@ void getKbLayout()
         break;
         #endif
         default:
-          k=INVALID_KEYBOARD_LAYOUT;
+          k=0;//placeholder to make it compatible with the currents UIs
         break;
       }
-      if( k == INVALID_KEYBOARD_LAYOUT )
+      if( k == 0 )//placeholder to make it compatible with the currents UIs
       {
         ptxtln("\r\n[Invalid choice]");
       } else {
-        kbmaps.setKbMap(k);
+        //kbmaps.setKbMap(k);
+        ptxtln("[Keyboard: ESPC]");//placeholder to make it compatible with the currents UIs
         if( testChars() )
         {
           ES.setKeyboardLayout(k);
@@ -408,7 +414,8 @@ uint8_t login(bool header)
        if(header)
         {
           ptxtln("\r\n[Granted]");
-          kbmaps.setKbMap(ES.getKeyboardLayout());
+          //kbmaps.setKbMap(ES.getKeyboardLayout());
+          ptxtln("[Keyboard: ESPC]");//placeholder to make it compatible with the currents UIs
         }        
      } else {
        if(header)
