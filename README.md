@@ -24,3 +24,10 @@ File                            - Description           - Author                
 finalkeybackup.c                - Backup program        - DusteD                - WTFPL         - http://finalkey.net/
 </pre>
 
+
+
+ESP32-C3 SuperMini port notes
+--------------
+- The firmware now contains `ARDUINO_ARCH_ESP32` compatibility paths for ESP32-C3 targets (USB HID keyboard, emulated EEPROM flags, and hardware RNG integration).
+- Default pin mapping for ESP32-C3 SuperMini is currently set to `ledPin=8`, `btnPin=3`, and `btnPwr=2`. Adjust these defines in `FinalKey/FinalKey.ino` if your hardware wiring differs.
+- Build with an ESP32 core that provides TinyUSB HID support (`USB.h` and `USBHIDKeyboard.h`).
