@@ -24,6 +24,43 @@
 #include <Arduino.h>
 #include <Entropy.h>
 
+#ifdef ARDUINO_ARCH_ESP32
+#include <esp_system.h>
+
+void EntropyClass::initialize(void)
+{
+  // esp_random() uses the SoC hardware RNG; no setup required.
+}
+
+uint32_t EntropyClass::random(void)
+{
+  return esp_random();
+}
+
+uint32_t EntropyClass::random(uint32_t max)
+{
+  if (max < 2)
+  {
+    return 0;
+  }
+
+  return esp_random() % max;
+}
+
+uint32_t EntropyClass::random(uint32_t min, uint32_t max)
+{
+  if (max <= min)
+  {
+    return min;
+  }
+
+  return min + random(max - min);
+}
+
+EntropyClass Entropy;
+
+#else
+
 
 const uint8_t WDT_MAX_8INT=0xFF;
 const uint16_t WDT_MAX_16INT=0xFFFF;
@@ -226,3 +263,5 @@ ISR(WDT_vect)
 // The library implements a single global instance.  There is no need, nor will the library 
 // work properly if multiple instances are created.
 EntropyClass Entropy;
+
+#endif

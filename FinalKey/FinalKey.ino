@@ -22,7 +22,14 @@
 #include <Wire.h>
 #include <EncryptedStorage.h>
 #include <I2ceep.h>
+
+#ifdef ARDUINO_ARCH_ESP32
+#include <EEPROM.h>
+#include <USB.h>
+#include <USBHIDKeyboard.h>
+#else
 #include <avr/eeprom.h>
+#endif
 
 
 //Edit this file to select included layouts.
@@ -31,11 +38,20 @@
 //https://github.com/Nurrl/LocaleKeyboard.js
 //It also makes the sketch compatible with 1.8.x IDE,I just has to modify the twi buffer
 //and add the board definition
+#ifndef ARDUINO_ARCH_ESP32
 #include <Keyboard.h>
+#endif
 
+#ifdef ARDUINO_ARCH_ESP32
+// ESP32-C3 SuperMini defaults (adjust if your wiring differs)
+#define ledPin 8
+#define btnPin 3
+#define btnPwr 2
+#else
 #define ledPin 10
 #define btnPin 9
 #define btnPwr 7
+#endif
 
 #define BTN_NO 0
 #define BTN_YES 1
@@ -74,6 +90,30 @@
 uint8_t lastEntryCmd[]={0,0,0,0}, lastEntryIdx=0;
 uint16_t lastEntryNum[]={0,0,0,0};
 
+#ifdef ARDUINO_ARCH_ESP32
+USBHIDKeyboard Keyboard;
+
+uint8_t fkEepromRead(uint8_t idx)
+{
+  return EEPROM.read(idx);
+}
+
+void fkEepromWrite(uint8_t idx, uint8_t value)
+{
+  EEPROM.write(idx, value);
+  EEPROM.commit();
+}
+#else
+uint8_t fkEepromRead(uint8_t idx)
+{
+  return eeprom_read_byte((uint8_t*)idx);
+}
+
+void fkEepromWrite(uint8_t idx, uint8_t value)
+{
+  eeprom_write_byte((uint8_t*)idx, value);
+}
+#endif
 
 
 const char clsStr[] = { 27, '[', '2','J',27,'[','H',0 };
@@ -437,6 +477,12 @@ void setup() {
 
   Wire.begin();
   Serial.begin(9600);
+
+#ifdef ARDUINO_ARCH_ESP32
+  USB.begin();
+  Keyboard.begin();
+  EEPROM.begin(64);
+#endif
 
   setRng();  
 
@@ -1344,7 +1390,7 @@ void loop()
 
 
   //If the firmware flash function is enabled, warn the user about it.
-  if( eeprom_read_byte((uint8_t*)0) != 'F' )
+  if( fkEepromRead(0) != 'F' )
   {
     ptxtln("[NOTE: flash unlocked]");
   }
@@ -1536,12 +1582,12 @@ void loop()
 
                  if( btnWait(BTN_TIMEOUT_NO_TIMEOUT ) )
                  {
-                   eeprom_write_byte(0,'F');
-                   eeprom_write_byte((uint8_t*)1,'K');
+                   fkEepromWrite(0,'F');
+                   fkEepromWrite(1,'K');
                    ptxtln("[locked]");
                  } else {
-                   eeprom_write_byte(0,0);
-                   eeprom_write_byte((uint8_t*)1,0);
+                   fkEepromWrite(0,0);
+                   fkEepromWrite(1,0);
                    ptxtln("[unlocked]");
                  }
 
